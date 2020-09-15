@@ -156,7 +156,7 @@ class EKF:
 
         v, S = self.innovation(z, ekfstate, sensor_state=sensor_state)
 
-        NIS = v@la.inv(S)@v.T
+        NIS = v.T @ la.inv(S) @ v
 
         return NIS
 
