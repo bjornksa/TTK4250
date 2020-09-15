@@ -90,8 +90,8 @@ ax2.set_ylabel('turn rate')
 # %% a: tune by hand and comment
 
 # set parameters
-sigma_a = 0.25  # TODO
-sigma_z = 3  # TODO
+sigma_a = 1
+sigma_z = 3
 
 # create the model and estimator object
 dynmod = dynamicmodels.WhitenoiseAccelleration(sigma_a)
@@ -101,14 +101,13 @@ print(ekf_filter)  # make use of the @dataclass automatic repr
 
 # initialize mean and covariance
 x_bar_init = np.array([0, 0, 1, 1]).T # ???
-P_bar_init = np.diag([50, 50, 10, 10])
+P_bar_init = np.square(np.diag([75, 75, 10, 10]))
 init_ekfstate = ekf.GaussParams(x_bar_init, P_bar_init)
 
 # estimate
 ekfpred_list, ekfupd_list = ekf_filter.estimate_sequence(Z, init_ekfstate, Ts)
 
 # get statistics:
-# TODO: see that you sort of understand what this does
 stats = ekf_filter.performance_stats_sequence(
     K, Z=Z, ekfpred_list=ekfpred_list, ekfupd_list=ekfupd_list, X_true=Xgt[:, :4],
     norm_idxs=[[0, 1], [2, 3]], norms=[2, 2]
@@ -119,23 +118,23 @@ print(f'keys in stats is {stats.dtype.names}')
 # %% Calculate average performance metrics
 # stats['dists_pred'] contains 2 norm of position and speed for each time index
 # same for 'dists_upd'
-RMSE_pred = np.sqrt(np.mean(np.square(stats['dists_pred']), 1))
-RMSE_upd = np.sqrt(np.mean(np.square(stats['dists_upd']), 1))
+RMSE_pred = np.sqrt(np.mean(np.square(stats['dists_pred']), axis=1))
+RMSE_upd = np.sqrt(np.mean(np.square(stats['dists_upd']), axis=1))
 
 fig3, ax3 = plt.subplots(num=3, clear=True)
 
 ax3.plot(*Xgt.T[:2])
 ax3.plot(*ekfupd_list.mean.T[:2])
 RMSEs_str = ", ".join(f"{v:.2f}" for v in (*RMSE_pred, *RMSE_upd))
-ax3.set_title(
-    rf'$\sigma_a = {sigma_a}$, $\sigma_z= {sigma_z}$,' + f'\nRMSE(p_p, p_v, u_p, u_v) = ({RMSEs_str})')
+ax3.set_title("")
+    #rf'$\sigma_a = {sigma_a}$, $\sigma_z= {sigma_z}$,' + f'\nRMSE tunin(p_p, p_v, u_p, u_v) = ({RMSEs_str})')
 
 # %% Task 5 b and c
 
 # % parameters for the parameter grid
 # TODO: pick reasonable values for grid search
 # n_vals = 20  # is Ok, try lower to begin with for more speed (20*20*1000 = 400 000 KF steps)
-n_vals = 10 # 20
+n_vals = 5 # 20
 sigma_a_low = 0.1
 sigma_a_high = 5
 sigma_z_low = 1
@@ -195,7 +194,7 @@ ax4.view_init(30, 20)
 
 # %% find confidence regions for NEES and plot
 confprob = 0.9
-CINEES = np.array(scipy.stats.chi2.interval(confprob, 2*K)) / K  # TODO, not NIS now, but very similar
+CINEES = np.array(scipy.stats.chi2.interval(confprob, 4*K)) / K  # TODO, not NIS now, but very similar
 print(CINEES)
 
 # plot

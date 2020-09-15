@@ -171,7 +171,7 @@ class EKF:
         x, P = ekfstate
 
         x_diff = x - x_true
-        NEES = x_diff @ la.inv(P) @ x_diff
+        NEES = x_diff.T @ la.inv(P) @ x_diff
         return NEES
 
     def gate(self,
