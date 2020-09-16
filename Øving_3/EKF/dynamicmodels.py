@@ -73,7 +73,7 @@ class WhitenoiseAccelleration:
         Q_2_1 = np.eye(2)*1/2*Ts**2
         Q_2_2 = np.eye(2)*Ts
 
-        Q = np.block([[Q_1_1, Q_1_2], [Q_2_1, Q_2_2]])
+        Q = np.block([[Q_1_1, Q_1_2], [Q_2_1, Q_2_2]])*self.sigma**2
 
         # Hint: sigma can be found as self.sigma, see variable declarations
         # Note the @dataclass decorates this class to create an init function that takes
