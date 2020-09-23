@@ -13,12 +13,12 @@ def discrete_bayes(
 ]:  # the new marginal and conditional: shapes=((m,), (m, n))
     """Swap which discrete variable is the marginal and conditional."""
 
-    joint = # TDOO
+    joint = cond_pr * pr[:,None]
 
-    marginal = # TODO
+    marginal = np.sum(joint, axis=0)
 
     # Take care of rare cases of degenerate zero marginal,
-    conditional = # TODO
+    conditional = joint/marginal[:,None]
 
     # flip axes?? (n, m) -> (m, n)
     # conditional = conditional.T
