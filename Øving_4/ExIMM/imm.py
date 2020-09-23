@@ -68,9 +68,8 @@ class IMM(Generic[MT]):
         """Calculate the predicted mode probability and the mixing probabilities."""
 
         predicted_mode_probabilities, mix_probabilities = (
-            None,
-            None,
-        )  # TODO hint: discretebayes.discrete_bayes
+            discretebayes.discrete_bayes(immstate.weights,self.PI)
+        )
 
         # Optional assertions for debugging
         assert np.all(np.isfinite(predicted_mode_probabilities))
@@ -85,8 +84,8 @@ class IMM(Generic[MT]):
         # the mixing probabilities: shape=(M, M)
         mix_probabilities: np.ndarray,
     ) -> List[MT]:
-
-        mixed_states = # TODO
+        mixed_states = [fl.reduce_mixture(MixtureParameters(mp, immstate.components))
+                        for fl, mp in zip(self.filters, mix_probabilities)]
         return mixed_states
 
     def mode_matched_prediction(
@@ -95,7 +94,11 @@ class IMM(Generic[MT]):
         # The sampling time
         Ts: float,
     ) -> List[MT]:
-        modestates_pred = # TODO
+        modestates_pred = np.array([])
+        for mode in range(len(mode_states)):
+            EKF = ekf.predict(mode_states[mode],Ts)
+            modestates_pred.append(EKF)
+
         return modestates_pred
 
     def predict(
@@ -112,11 +115,11 @@ class IMM(Generic[MT]):
         """
 
         # TODO: proposed structure
-        predicted_mode_probability, mixing_probability = # TODO
+        predicted_mode_probability, mixing_probability = mix_probabilities(immstate, Ts)
 
-        mixed_mode_states: List[MT] = # TODO
+        mixed_mode_states: List[MT] = mix_states(immstate,mixing_probability)
 
-        predicted_mode_states = # TODO
+        predicted_mode_states = mode_matched_prediction(mixed_mode_states, Ts)
 
         predicted_immstate = MixtureParameters(
             predicted_mode_probability, predicted_mode_states
@@ -414,7 +417,7 @@ class IMM(Generic[MT]):
         # Make sure the sensor_state_list actually is a sequence
         sensor_state_seq = sensor_state or [None] * K
 
-        init_immstate = self.init_filter_state(init_immstate)
+        #init_immstate = self.init_filter_state(init_immstate)
 
         immstate_upd = init_immstate
 
