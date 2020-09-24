@@ -5,11 +5,30 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Launch python file",
             "type": "python",
             "request": "launch",
-            "program": "run_imm.py",
-            "console": "integratedTerminal"
+            "program": "${input:choose_program}.py",
+            "console": "integratedTerminal",
+
+        },
+    ],
+    "inputs": [
+        {
+            "default": "SIR_PF_pendulum",
+            "id": "choose_program",
+            "type": "pickString",
+            "options": [
+                {
+                    "value": "SIR_PF_pendulum",
+                    "label": "Particle Filter"
+                },
+                {
+                    "value": "run_imm",
+                    "label": "IMM drit"
+                }
+            ],
+            "description": "Choose program to run"
         }
     ]
 }
