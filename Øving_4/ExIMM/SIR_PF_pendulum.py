@@ -156,7 +156,6 @@ for k in range(K):
     #     pxn = px[:]
 
     N_eff = 1 / np.sum(w**2)
-    print(f"Degeneracy = {N_eff}")
 
     # trajecory sample prediction
     for n in range(n):
