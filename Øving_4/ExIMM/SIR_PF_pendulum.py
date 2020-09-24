@@ -89,16 +89,16 @@ ax2.set_ylabel("z")
 # %% Task: Estimate using a particle filter
 
 # number of particles to use
-N = # TODO
+N = 100
 
 # initialize particles, pretend you do not know where the pendulum starts
 px = np.array([
-    rng. # TODO,
-    rng. # TODO
+    rng.uniform(-np.pi, np.pi, N),
+    rng.normal(size=N) * np.pi/4
     ]).T
 
 # initial weights
-w = # TODO
+w = np.full((N,1), 1/N)
 
 # allocate some space for resampling particles
 pxn = np.zeros_like(px)
@@ -126,21 +126,42 @@ for k in range(K):
     print(f"k = {k}")
     # weight update
     for n in range(N):
-        w[n] =  # TODO, hint: PF_measurement_distribution.pdf
-    w = # TODO: normalize
+        dz = Z[k] - h(px[n], Ld, l, Ll)
+        w[n] = PF_measurement_distribution.pdf(dz)
+    w += eps
+    w = w / np.sum(w)
 
     # resample
     # TODO: some pre calculations?
+    # N_eff = 1 / np.sum(w**2)
+    # if N_eff <= N/2:
+    # resample using algorithm 3 p. 90
+    cumweights = np.cumsum(w)
+    indicesout = np.zeros((N, 1))
+    noise = rng.random((1,1)) / N
+
     i = 0
     for n in range(N):
         # find a particle 'i' to pick
         # algorithm in the book, but there are other options as well
+        u_n = n/N + noise
+        while u_n > cumweights[i]:
+            i += 1
         pxn[n] = px[i]
+    # indicesout = indicesout[np.randperm(np.size(indicesout))]
+    rng.shuffle(pxn,axis=0)
+
+    w.fill(1/N)
+    # else:
+    #     pxn = px[:]
+
+    N_eff = 1 / np.sum(w**2)
+    print(f"Degeneracy = {N_eff}")
 
     # trajecory sample prediction
     for n in range(n):
-        vkn = # TODO: process noise, hint: PF_dynamic_distribution.rvs
-        px[n] = # TODO: particle prediction
+        vkn = PF_dynamic_distribution.rvs()
+        px[n] = pendulum_dynamics_discrete(pxn[n], vkn, Ts, a)
 
     # plot
     sch_particles.set_offsets(np.c_[l * np.sin(pxn[:, 0]), -l * np.cos(pxn[:, 0])])
